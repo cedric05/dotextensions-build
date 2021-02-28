@@ -1,0 +1,34 @@
+name: release builds
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+env:
+  dothttpversion: "0.0.5"
+jobs:
+  push:
+    runs-on: windows-2019
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9.1"
+          architecture: "x64"
+      - name: install dothttp-req
+        shell: powershell
+        run: |
+          pip install dothttp_req=={{dothttpversion}} pyinstaller  python-magic-bin flask
+          pyinstaller --distpath dist .\dotextensions.py --add-data 'dothttp\http.tx;.'
+          Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\dotextensions
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          asset_name: dotextensions-${{dothttpversion}}-x86-windows.zip
+          file: dotextensions-x86-windows.zip
+          tag: v-${{ dothttpversion }}
+          overwrite: true
+          file_glob: true
