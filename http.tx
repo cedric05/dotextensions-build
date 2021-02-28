@@ -1,0 +1,120 @@
+//HTTP: ram=HTTP2
+MULTISET: allhttps=HTTP+;
+
+HTTP:((namewrap=NAMEWRAP)?
+    urlwrap=URL
+    (basic_auth_wrap=BASICAUTH)?
+    (lines *= LINE)?
+    (payload=PAYLOAD)?
+    (output=TOFILE)?);
+
+URL: 
+    (method=METHODTYPE)? url=URLString
+;
+
+NAMEWRAP:
+    '@name' '(' name=DotString ')'
+;
+
+LINE: 
+    (query=QUERY) | (header=HEADER)
+;
+
+HEADER: 
+    'header' '(' key=DotString ',' value=DotString ')'
+    | key=DotString ':' value=DotString
+;
+
+BASICAUTH:
+    'basicauth' '(' username=DotString ',' password= DotString ')'
+;
+
+METHODTYPE: 
+    "GET" | "POST" | "OPTIONS"
+    | "DELETE" | "CONNECT" | "PUT"
+    | "HEAD" | "TRACE"
+;
+
+QUERY: 
+    'query' '(' key=DotString ',' value=DotString ')'
+    | '?' '(' key=DotString ',' value=DotString ')'
+    | '?' key=DotString ',' value=DotString
+    | '?' key=DotString ':' value=DotString
+    | '?' key=DotString '=' value=DotString
+;
+
+PAYLOAD: 
+    (   'data' '(' data=STRING (',' type=STRING)? ','?  ')'
+        | 'data' '(' datajson=JSON (',' type=STRING)? ','? ')'
+        | 'fileinput' '(' file=STRING   (',' type=STRING)? ','?  ')'
+        | ('json' '(' json=JSON  ')' )
+        | (fileswrap=FILES)
+    )
+;
+
+FILES:
+    "files" "(" files*=FILETYPE[','] ','? ")"
+;
+
+FILETYPE:
+    ( '(' name=STRING ',' path=STRING (',' type=STRING)? ')')
+;
+
+TOFILE: 'output' '('output=STRING ')';
+
+JSON:
+    array=Array | object=Object
+;
+
+Array:
+    "[" (values*=Value[','] ) ','? "]"
+;
+
+Value:
+    str=String | flt=Float | bl=Bool | object=Object | array=Array | null="null"
+;
+
+
+Bool:
+    value=BOOL
+;
+
+Float:
+    value=FLOAT
+;
+
+String: 
+    value=STRING
+;
+
+Object:
+    "{" members*=Member[','] ","? "}"
+;
+
+Member:
+    key=STRING ':' value=Value
+;
+Comment:
+    UnixComment | CommentLine | CommentBlock
+;
+UnixComment:
+    /#.*$/
+;
+CommentLine:
+    /\/\/.*?$/
+;
+
+CommentBlock:
+    /\/\*(.|\n)*?\*\//
+;
+
+DotString:
+    STRING | /\w+/
+;
+// allow only alphanumeric or string in double/single quotes
+
+URLString:
+    STRING | /https\:\/\/(\S)+/
+    | /http\:\/\/(\S)+/
+;
+// allows http or https till space otherwise go for string
