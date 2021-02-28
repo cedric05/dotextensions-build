@@ -20,7 +20,7 @@ jobs:
       - name: install dothttp-req
         shell: powershell
         run: |
-          pip install dothttp_req=={{dothttpversion}} pyinstaller  python-magic-bin flask
+          pip install dothttp_req==${{dothttpversion}} pyinstaller  python-magic-bin flask
           pyinstaller --distpath dist .\dotextensions.py --add-data 'dothttp\http.tx;.'
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\dotextensions
       - name: Upload binaries to release
