@@ -21,6 +21,7 @@ jobs:
         shell: powershell
         run: |
           pip install dothttp_req==${{ env.dothttpversion }} pyinstaller
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.'
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
       - name: Upload binaries to release
