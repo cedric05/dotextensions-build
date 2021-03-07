@@ -10,7 +10,7 @@ env:
 jobs:
   push:
     runs-on: windows-2019
-    if: github.event_name == 'push'
+    if: github.event_name == 'ram'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -42,7 +42,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build --tag dotextensions --build-arg ${{ env.dothttpversion }}.
+          docker build --tag dotextensions --build-arg ${{ env.dothttpversion }} .
           docker run --rm --entrypoint cat dotextensions  /app/cli.zip > dothttp-cli.zip
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
