@@ -5,7 +5,7 @@ LABEL maintainer="kesavarapu.siva@gmail.com"
 WORKDIR /app
 RUN apt update && apt install zip
 RUN pip install pyinstaller
-RUN pip install dothttp-req==${VERSION}}
+RUN pip install dothttp-req==${VERSION}
 ADD . /app 
 RUN pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.'  \
     && cd dist/ && zip -r ../cli.zip cli/  \
