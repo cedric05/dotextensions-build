@@ -31,7 +31,6 @@ jobs:
           file: dotextensions-x86-windows.zip
           tag: v-${{ env.dothttpversion }}
           overwrite: true
-          file_glob: true
   pushlinux:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
@@ -52,4 +51,3 @@ jobs:
           file: dothttp-cli.zip
           tag: v-${{ env.dothttpversion }}
           overwrite: true
-          file_glob: true
