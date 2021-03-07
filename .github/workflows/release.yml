@@ -6,7 +6,7 @@ on:
     tags:
       - v*
 env:
-  dothttpversion: 0.0.5
+  dothttpversion: 0.0.7
 jobs:
   push:
     runs-on: windows-2019
@@ -20,7 +20,7 @@ jobs:
       - name: install dothttp-req
         shell: powershell
         run: |
-          pip install dothttp_req==${{ env.dothttpversion }} pyinstaller  python-magic-bin flask
+          pip install dothttp_req==${{ env.dothttpversion }} pyinstaller
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.'
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
       - name: Upload binaries to release
@@ -29,6 +29,27 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           asset_name: dotextensions-${{ env.dothttpversion }}-x86-windows.zip
           file: dotextensions-x86-windows.zip
+          tag: v-${{ env.dothttpversion }}
+          overwrite: true
+          file_glob: true
+  pushlinux:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Log into registry
+        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Build image
+        run: |
+          docker build --tag dotextensions --build-arg ${{ env.dothttpversion }}.
+          docker run --rm --entrypoint cat dotextensions  /app/cli.zip > dothttp-cli.zip
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          asset_name: dotextensions-${{ env.dothttpversion }}-linux.zip
+          file: dothttp-cli.zip
           tag: v-${{ env.dothttpversion }}
           overwrite: true
           file_glob: true
