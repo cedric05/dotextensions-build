@@ -1,0 +1,8 @@
+POST https://httpbin.org/post
+files(
+    ("file1", "{{file1}}"),
+    ("file2", "{{file2}}"),
+    ("file2", "{{file2}}"),
+    ("text1", "simple text"),
+    ("text2", "simple text with content-type", "somecontent"),
+)

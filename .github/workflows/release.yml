@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - test
     tags:
       - v*
 env:
@@ -24,14 +25,25 @@ jobs:
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.'
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_name: dotextensions-${{ env.dothttpversion }}-x86-windows.zip
-          file: dotextensions-x86-windows.zip
-          tag: v-${{ env.dothttpversion }}
-          overwrite: true
+          node-version: 14.x
+      - run: |
+          export CLI_PATH=dist\\cli\\cli.exe
+          cd test
+          npm install
+          npx tsc
+          npx mocha out\test\*.js 
+      # - name: Upload binaries to release
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     asset_name: dotextensions-${{ env.dothttpversion }}-x86-windows.zip
+      #     file: dotextensions-x86-windows.zip
+      #     tag: v-${{ env.dothttpversion }}
+      #     overwrite: true
   pushlinux:
     runs-on: ubuntu-latest
     steps:
@@ -43,11 +55,23 @@ jobs:
         run: |
           docker build --tag dotextensions --build-arg VERSION=${{ env.dothttpversion }} .
           docker run --rm --entrypoint cat dotextensions  /app/cli.zip > dothttp-cli.zip
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_name: dotextensions-${{ env.dothttpversion }}-linux.zip
-          file: dothttp-cli.zip
-          tag: v-${{ env.dothttpversion }}
-          overwrite: true
+          node-version: 14.x
+      - run: |
+          unzip dothttp-cli.zip
+          export CLI_PATH=dothttp-cli/cli/cli
+          cd test
+          npm install
+          npx tsc
+          npx mocha out/test/*.js 
+      # - name: Upload binaries to release
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     asset_name: dotextensions-${{ env.dothttpversion }}-linux.zip
+      #     file: dothttp-cli.zip
+      #     tag: v-${{ env.dothttpversion }}
+      #     overwrite: true
