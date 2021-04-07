@@ -31,7 +31,8 @@ jobs:
         with:
           node-version: 14.x
       - run: |
-          export CLI_PATH=dist\\cli\\cli.exe
+          dir
+          set CLI_PATH=dist\\cli\\cli.exe
           cd test
           npm install
           npx tsc
@@ -61,6 +62,7 @@ jobs:
         with:
           node-version: 14.x
       - run: |
+          ls 
           unzip dothttp-cli.zip
           export CLI_PATH=dothttp-cli/cli/cli
           cd test
