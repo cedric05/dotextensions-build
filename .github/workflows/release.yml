@@ -34,7 +34,7 @@ jobs:
           cd test
           npm install
           npx tsc
-          npx cross-env CLI_PATH=dist\\cli\\cli.exe npx mocha out\test\*.js 
+          npx cross-env CLI_PATH=..\dist\\cli\\cli.exe npx mocha out\test\*.js 
       # - name: Upload binaries to release
       #   uses: svenstaro/upload-release-action@v2
       #   with:
