@@ -62,7 +62,7 @@ jobs:
       - run: |
           ls 
           unzip dothttp-cli.zip
-          export CLI_PATH=dothttp-cli/cli/cli
+          export CLI_PATH=cli/cli
           cd test
           npm install
           npx tsc

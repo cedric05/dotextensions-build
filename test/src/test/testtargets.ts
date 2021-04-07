@@ -5,12 +5,13 @@ import * as fs from "fs";
 import * as path from 'path';
 
 // "c:\\Users\\Neptune\\AppData\\Roaming\\Code\\User\\globalStorage\\shivaprasanth.dothttp-code\\cli\\cli\\cli.exe"
-const exePath = process.env.CLI_PATH!;
+const exePath = path.resolve(process.env.CLI_PATH!);
+console.log(`path specified is ${exePath}`);
 const client = new ClientHandler(exePath);
 
 let multipart = path.join(__dirname, "..", "..", "fixtures", "multipart.http");
 let simple = path.join(__dirname, "..", "..", "fixtures", "simple.http");
-
+console.log(`files path is ${multipart} ${simple}`);
 before(async () => {
 })
 describe('test target', function () {
