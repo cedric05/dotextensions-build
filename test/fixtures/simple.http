@@ -1,0 +1,36 @@
+@name("this is first1")
+POST https://httpbin.org/post
+json({
+    "simpel test":"with repeated names",
+
+})
+@name("this is first2")
+POST https://httpbin.org/post
+json({
+    "simpel test":"with repeated names",
+
+})
+@name("this is first3")
+POST https://httpbin.org/post
+json({
+    "simpel test":"with repeated names",
+
+})
+@name("this is first4")
+POST https://httpbin.org/post
+json({
+    "simpel test":"with repeated names",
+
+})
+@name("this is first5")
+POST https://httpbin.org/post
+json({
+    "simpel test":"with repeated names",
+
+})
+@name("this is first6")
+POST https://httpbin.org/post
+json({
+    "simpel test":"with repeated names",
+
+})

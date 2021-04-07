@@ -97,11 +97,11 @@ export class StdoutClient extends BaseSpanClient {
 }
 
 
-
 export type TargetSymbolInfo = {
     name: string;
     start: number;
     end: number;
+    method: string;
 };
 
 
@@ -146,7 +146,7 @@ export class ClientHandler {
         })
     }
 
-    async executeContent(options: DothttpRunOptions & { content: string }) {
+    async executeContent(options: DothttpRunOptions & { content?: string }) {
         return await this.cli.request(ClientHandler.contentExecutecommand, {
             content: options.content,
             env: options.env,

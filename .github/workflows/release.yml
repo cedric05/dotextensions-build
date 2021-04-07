@@ -1,14 +1,14 @@
 name: release builds
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     tags:
       - v*
 env:
   dothttpversion: 0.0.11
 jobs:
-  push:
+  push-windows:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
@@ -24,6 +24,16 @@ jobs:
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.'
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: |
+          dir
+          cd test
+          npm install
+          npx tsc
+          npx cross-env CLI_PATH=..\dist\\cli\\cli.exe npx mocha out\test\*.js 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -43,6 +53,18 @@ jobs:
         run: |
           docker build --tag dotextensions --build-arg VERSION=${{ env.dothttpversion }} .
           docker run --rm --entrypoint cat dotextensions  /app/cli.zip > dothttp-cli.zip
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: |
+          ls 
+          unzip dothttp-cli.zip
+          export CLI_PATH=$(realpath cli/cli)
+          cd test
+          npm install
+          npx tsc
+          npx mocha out/test/*.js 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
