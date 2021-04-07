@@ -31,11 +31,10 @@ jobs:
           node-version: 14.x
       - run: |
           dir
-          set CLI_PATH=dist\\cli\\cli.exe
           cd test
           npm install
           npx tsc
-          npx mocha out\test\*.js 
+          npx cross-env CLI_PATH=dist\\cli\\cli.exe npx mocha out\test\*.js 
       # - name: Upload binaries to release
       #   uses: svenstaro/upload-release-action@v2
       #   with:
@@ -62,7 +61,7 @@ jobs:
       - run: |
           ls 
           unzip dothttp-cli.zip
-          export CLI_PATH=cli/cli
+          export CLI_PATH=$(realpath cli/cli)
           cd test
           npm install
           npx tsc
