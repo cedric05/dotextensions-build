@@ -6,68 +6,68 @@ on:
 env:
   dothttpversion: dev
 jobs:
-  # push-windows:
-  #   runs-on: windows-2019
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-python@v2
-  #       with:
-  #         python-version: "3.9.1"
-  #         architecture: "x64"
-  #     - name: install dothttp-req
-  #       shell: powershell
-  #       run: |
-  #         pip install pyinstaller
-  #         pip install git+https://github.com/cedric05/dothttp.git
-  #         pip uninstall python-magic -y
-  #         Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/dev/dothttp/http.tx -OutFile http.tx
-  #         pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.'
-  #         Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
-  #     - name: Use Node.js 14.x
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 14.x
-  #     - run: |
-  #         dir
-  #         cd test
-  #         npm install
-  #         npx tsc
-  #         npx cross-env CLI_PATH=..\dist\\cli\\cli.exe npx mocha out\test\*.js 
-  #     - name: 'Upload Artifact'
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: dotextensions-x86-windows.zip
-  #         path: dotextensions-x86-windows.zip
-  #         retention-days: 30
-  # pushlinux:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Log into registry
-  #       run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+  push-windows:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9.1"
+          architecture: "x64"
+      - name: install dothttp-req
+        shell: powershell
+        run: |
+          pip install pyinstaller
+          pip install git+https://github.com/cedric05/dothttp.git
+          pip uninstall python-magic -y
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/dev/dothttp/http.tx -OutFile http.tx
+          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.'
+          Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: |
+          dir
+          cd test
+          npm install
+          npx tsc
+          npx cross-env CLI_PATH=..\dist\\cli\\cli.exe npx mocha out\test\*.js 
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: dotextensions-x86-windows.zip
+          path: dotextensions-x86-windows.zip
+          retention-days: 30
+  pushlinux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Log into registry
+        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
-  #     - name: Build image
-  #       run: |
-  #         docker build --file Dockerfile.dev --tag dotextensions --build-arg VERSION=${{ env.dothttpversion }} .
-  #         docker run --rm --entrypoint cat dotextensions  /app/cli.zip > dothttp-cli.zip
-  #     - name: Use Node.js 14.x
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 14.x
-  #     - run: |
-  #         ls 
-  #         unzip dothttp-cli.zip
-  #         export CLI_PATH=$(realpath cli/cli)
-  #         cd test
-  #         npm install
-  #         npx tsc
-  #         npx mocha out/test/*.js 
-  #     - name: 'Upload Artifact'
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: dothttp-cli.zip
-  #         path: dothttp-cli.zip
-  #         retention-days: 30
+      - name: Build image
+        run: |
+          docker build --file Dockerfile.dev --tag dotextensions --build-arg VERSION=${{ env.dothttpversion }} .
+          docker run --rm --entrypoint cat dotextensions  /app/cli.zip > dothttp-cli.zip
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: |
+          ls 
+          unzip dothttp-cli.zip
+          export CLI_PATH=$(realpath cli/cli)
+          cd test
+          npm install
+          npx tsc
+          npx mocha out/test/*.js 
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: dothttp-cli.zip
+          path: dothttp-cli.zip
+          retention-days: 30
   push-mac:
     runs-on: macos-latest
     steps:
@@ -86,6 +86,12 @@ jobs:
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: dothttp-cli-darwin.zip
+          path: cli.zip
+          retention-days: 30
       - name: Use Node.js 14.x
         uses: actions/setup-node@v1
         with:
@@ -99,9 +105,3 @@ jobs:
           npm install typescript@latest
           npx tsc
           npx mocha out/test/*.js 
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v2
-        with:
-          name: dothttp-cli-darwin.zip
-          path: cli.zip
-          retention-days: 30
