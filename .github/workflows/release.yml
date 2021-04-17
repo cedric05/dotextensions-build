@@ -73,3 +73,41 @@ jobs:
           file: dothttp-cli.zip
           tag: v-${{ env.dothttpversion }}
           overwrite: true
+  push-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9.1"
+          architecture: "x64"
+      - name: install dothttp
+        run: |
+          pip install pyinstaller 
+          pip install dothttp_req==${{ env.dothttpversion }}
+          pip uninstall python-magic -y
+          wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.'  \
+              && cd dist/ && zip -r ../cli.zip cli/  \
+              && cd .. && rm -rf dist build
+          cp cli.zip dothttp-cli.zip
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: |
+          ls 
+          unzip dothttp-cli.zip
+          export CLI_PATH=$(realpath cli/cli)
+          cd test
+          npm install
+          npx tsc
+          npx mocha out/test/*.js 
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          asset_name: dotextensions-${{ env.dothttpversion }}-darwin.zip
+          file: cli.zip
+          tag: v-${{ env.dothttpversion }}
+          overwrite: true
