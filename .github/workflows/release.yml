@@ -101,6 +101,7 @@ jobs:
           export CLI_PATH=$(pwd)/cli/cli
           cd test
           npm install
+          npm install typescript@latest
           npx tsc
           npx mocha out/test/*.js 
       - name: Upload binaries to release
