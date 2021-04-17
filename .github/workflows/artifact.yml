@@ -65,8 +65,8 @@ jobs:
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
         with:
-          name: dothttp-cli-darwin.zip
-          path: dothttp-cli-darwin.zip
+          name: dothttp-cli.zip
+          path: dothttp-cli.zip
           retention-days: 30
   push-mac:
     runs-on: macos-latest
@@ -85,9 +85,22 @@ jobs:
           pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.'  \
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
+          cp cli.zip dothttp-cli.zip
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: |
+          ls 
+          unzip dothttp-cli.zip
+          export CLI_PATH=$(realpath cli/cli)
+          cd test
+          npm install
+          npx tsc
+          npx mocha out/test/*.js 
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
         with:
-          name: dothttp-cli.zip
+          name: dothttp-cli-darwin.zip
           path: cli.zip
           retention-days: 30
