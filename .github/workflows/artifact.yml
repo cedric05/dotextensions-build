@@ -68,3 +68,26 @@ jobs:
           name: dothttp-cli.zip
           path: dothttp-cli.zip
           retention-days: 30
+  push-mac:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9.1"
+          architecture: "x64"
+      - name: install dothttp
+        run: |
+          pip install pyinstaller 
+          pip install git+https://github.com/cedric05/dothttp.git
+          pip uninstall python-magic -y
+          wget https://raw.githubusercontent.com/cedric05/dothttp/dev/dothttp/http.tx
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.'  \
+              && cd dist/ && zip -r ../cli.zip cli/  \
+              && cd .. && rm -rf dist build
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: dothttp-cli.zip
+          path: cli.zip
+          retention-days: 30
