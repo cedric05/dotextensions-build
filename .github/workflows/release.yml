@@ -6,7 +6,7 @@ on:
     tags:
       - v*
 env:
-  dothttpversion: 0.0.16
+  dothttpversion: 0.0.17
 jobs:
   push-windows:
     runs-on: windows-2019
