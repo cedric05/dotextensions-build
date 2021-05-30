@@ -6,7 +6,7 @@ on:
     tags:
       - v*
 env:
-  dothttpversion: 0.0.19
+  dothttpversion: 0.0.20
 jobs:
   push-windows:
     runs-on: windows-2019
@@ -22,7 +22,8 @@ jobs:
           pip install dothttp_req==${{ env.dothttpversion }} pyinstaller
           pip uninstall python-magic -y
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
-          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.'
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
+          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.'
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
       - name: Use Node.js 14.x
         uses: actions/setup-node@v1
@@ -87,7 +88,8 @@ jobs:
           pip install dothttp_req==${{ env.dothttpversion }}
           pip uninstall python-magic -y
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
-          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.'  \
+          wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.'  \
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
