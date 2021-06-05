@@ -6,7 +6,7 @@ on:
     tags:
       - v*
 env:
-  dothttpversion: 0.0.21
+  dothttpversion: 0.0.22
 jobs:
   push-windows:
     runs-on: windows-2019
@@ -20,7 +20,6 @@ jobs:
         shell: powershell
         run: |
           pip install dothttp_req==${{ env.dothttpversion }} pyinstaller
-          pip uninstall python-magic -y
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.'
@@ -86,7 +85,6 @@ jobs:
         run: |
           pip install pyinstaller 
           pip install dothttp_req==${{ env.dothttpversion }}
-          pip uninstall python-magic -y
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
           pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.'  \
