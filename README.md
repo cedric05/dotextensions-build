@@ -11,7 +11,7 @@ darwin|x86_64
 ---
 
 
-Windows takes care of emulation https://docs.microsoft.com/en-us/windows/uwp/porting/apps-on-arm#win32-apps. for linux and darwin it has to be supported
+Windows takes care of emulation https://docs.microsoft.com/en-us/windows/uwp/porting/apps-on-arm#win32-apps. for linux and darwin support is not yest available.
 
 For  other cpu architectures, there is no support in  github actions.
 
