@@ -1,5 +1,5 @@
 # for more information visit https://github.com/cedric05/docker-python3.9
-FROM ghcr.io/cedric05/python3.9:3.9.6 as builder
+FROM ghcr.io/cedric05/python:3.10.0 as builder
 
 ARG VERSION
 LABEL maintainer="kesavarapu.siva@gmail.com"
