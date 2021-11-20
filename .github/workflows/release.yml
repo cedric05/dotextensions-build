@@ -6,7 +6,8 @@ on:
     tags:
       - v*
 env:
-  dothttpversion: 0.0.39b5
+  dothttpversion: 0.0.39b4
+  EXTENSION_VERSION: 0.0.39b5
 jobs:
   push-windows:
     runs-on: windows-2019
@@ -38,9 +39,9 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_name: dotextensions-${{ env.dothttpversion }}-x86-windows.zip
+          asset_name: dotextensions-${{ env.EXTENSION_VERSION }}-x86-windows.zip
           file: dotextensions-x86-windows.zip
-          tag: v-${{ env.dothttpversion }}
+          tag: v-${{ env.EXTENSION_VERSION }}
           overwrite: true
   pushlinux:
     runs-on: ubuntu-latest
@@ -69,9 +70,9 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_name: dotextensions-${{ env.dothttpversion }}-linux.zip
+          asset_name: dotextensions-${{ env.EXTENSION_VERSION }}-linux.zip
           file: dothttp-cli.zip
-          tag: v-${{ env.dothttpversion }}
+          tag: v-${{ env.EXTENSION_VERSION }}
           overwrite: true
   push-mac:
     runs-on: macos-latest
@@ -108,7 +109,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_name: dotextensions-${{ env.dothttpversion }}-darwin.zip
+          asset_name: dotextensions-${{ env.EXTENSION_VERSION }}-darwin.zip
           file: cli.zip
-          tag: v-${{ env.dothttpversion }}
+          tag: v-${{ env.EXTENSION_VERSION }}
           overwrite: true
