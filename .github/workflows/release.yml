@@ -6,8 +6,8 @@ on:
     tags:
       - v*
 env:
-  dothttpversion: 0.0.40a6
-  EXTENSION_VERSION: 0.0.40a6
+  dothttpversion: 0.0.40a7
+  EXTENSION_VERSION: 0.0.40a7
 jobs:
   push-windows:
     runs-on: windows-2019
