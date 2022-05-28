@@ -1,6 +1,6 @@
 # dotextensions-build
 
-Github actions generates executables for 
+Github action generates executables for 
 
 ---
 os| arch
@@ -11,9 +11,9 @@ darwin|x86_64
 ---
 
 
-Windows takes care of emulation https://docs.microsoft.com/en-us/windows/uwp/porting/apps-on-arm#win32-apps. for linux and darwin support is not yest available.
+[Windows](https://docs.microsoft.com/en-us/windows/uwp/porting/apps-on-arm#win32-apps/)/ [darwin](https://support.apple.com/en-in/HT211861) has support for amd64 emulation. Native support is not yet availabile. 
 
-For  other cpu architectures, there is no support in  github actions.
+Arm support for linux is yet to come.
 
 
 
