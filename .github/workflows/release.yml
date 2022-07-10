@@ -7,7 +7,7 @@ on:
       - v*
 env:
   dothttpversion: 0.0.41a5
-  EXTENSION_VERSION: 0.0.41a5
+  EXTENSION_VERSION: 0.0.41a6
 jobs:
   push-windows:
     runs-on: windows-2019
