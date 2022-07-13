@@ -1,8 +1,8 @@
 name: Release prod Artifacts
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     tags:
       - v*
 env:
@@ -59,7 +59,7 @@ jobs:
         run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.19/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"  
       - name: Build image
         run: |
-          earthly +save-all
+          earthly +save-all --build-arg VERSION=${{ env.dothttpversion }}
           mv cli-linux/amd64.zip cli-amd64.zip
           mv cli-linux/arm64.zip cli-arm64.zip
       - name: Use Node.js 14.x
