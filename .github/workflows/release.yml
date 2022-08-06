@@ -6,8 +6,8 @@ on:
     tags:
       - v*
 env:
-  dothttpversion: 0.0.41a5
-  EXTENSION_VERSION: 0.0.41a6
+  dothttpversion: 0.0.41a7
+  EXTENSION_VERSION: 0.0.41a7
 jobs:
   push-windows:
     runs-on: windows-2019
@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.10.5"
+          python-version: "3.10.6"
           architecture: "x64"
       - name: install dothttp-req
         shell: powershell
@@ -96,7 +96,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.10.5"
+          python-version: "3.10.6"
           architecture: "x64"
       - name: install dothttp
         run: |

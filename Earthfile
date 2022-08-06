@@ -5,8 +5,8 @@ save-all:
         --platform=linux/amd64 \
         +build
 build:
-    FROM ghcr.io/cedric05/python:3.10.5-1
-    ARG VERSION=0.0.41a5
+    FROM ghcr.io/cedric05/python:3.10.6
+    ARG VERSION=0.0.41a7
     ARG TARGETPLATFORM
     LABEL maintainer="kesavarapu.siva@gmail.com"
     RUN apt update && apt install zip
