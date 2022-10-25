@@ -1,5 +1,5 @@
 # for more information visit https://github.com/cedric05/docker-python3.9
-FROM ghcr.io/cedric05/python:3.10.5-1 as builder
+FROM ghcr.io/cedric05/python:3.11.0 as builder
 
 ARG VERSION
 LABEL maintainer="kesavarapu.siva@gmail.com"
@@ -9,7 +9,7 @@ RUN pip uninstall python-magic -y
 RUN pip install git+https://github.com/cedric05/dothttp.git
 WORKDIR /app
 ADD . /app 
-RUN wget https://raw.githubusercontent.com/cedric05/dothttp/dev/dothttp/http.tx
+RUN wget https://raw.githubusercontent.com/cedric05/dothttp/main/dothttp/http.tx
 RUN pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.'  \
     && cd dist/ && zip -r ../cli.zip cli/  \
     && cd .. && rm -rf dist build
