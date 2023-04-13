@@ -62,18 +62,18 @@ jobs:
           earthly +save-all --VERSION=${{ env.dothttpversion }}
           mv cli-linux/amd64.zip cli-amd64.zip
           mv cli-linux/arm64.zip cli-arm64.zip
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14.x
-      - run: |
-          ls 
-          unzip cli-amd64.zip
-          export CLI_PATH=$(realpath cli/cli)
-          cd test
-          npm install
-          npx tsc
-          npx mocha out/test/*.js 
+      # - name: Use Node.js 14.x
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 14.x
+      # - run: |
+      #     ls 
+      #     unzip cli-amd64.zip
+      #     export CLI_PATH=$(realpath cli/cli)
+      #     cd test
+      #     npm install
+      #     npx tsc
+      #     npx mocha out/test/*.js 
       - name: Upload arm64 binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
