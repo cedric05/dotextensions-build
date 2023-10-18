@@ -6,7 +6,7 @@ save-all:
         +build
 build:
     FROM ghcr.io/cedric05/python:3.11.4
-    ARG VERSION=0.0.42a10
+    ARG VERSION=0.0.42a11
     ARG TARGETPLATFORM
     LABEL maintainer="kesavarapu.siva@gmail.com"
     RUN apt update && apt install zip
