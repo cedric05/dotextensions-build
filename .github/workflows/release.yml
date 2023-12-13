@@ -39,7 +39,7 @@ jobs:
       - name: install dothttp-req
         shell: powershell
         run: |
-          pip install dothttp_req==${{ env.dothttpversion }} pyinstaller
+          pip install dothttp_req==${{ env.dothttpversion }} pyinstaller==6.1.0
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.'
@@ -119,7 +119,7 @@ jobs:
           architecture: "x64"
       - name: install dothttp
         run: |
-          pip install pyinstaller 
+          pip install pyinstaller==6.1.0 
           pip install dothttp_req==${{ env.dothttpversion }}
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
