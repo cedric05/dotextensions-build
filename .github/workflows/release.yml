@@ -9,10 +9,10 @@ on:
     inputs:
       dothttpversion:
         required: true
-        description: "dothttp python package version"
+        description: "dothttp python package version (don't include prefix `v`)"
       dotextensions_version:
         required: false
-        description: "binary version of python package"
+        description: "binary version of python package, if not provided, we will assume dothttpversion"
       python_version:
         required: false
         default: "3.11.4"
