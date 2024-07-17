@@ -15,11 +15,11 @@ on:
         description: "binary version of python package, if not provided, we will assume dothttpversion"
       python_version:
         required: false
-        default: "3.11.8"
+        default: "3.12.4"
         description: "python version to cook"
       linux_python_version:
         required: false
-        default: "3.11.8"
+        default: "3.12.4"
         description: "linux version python to cook"
 
 env:
