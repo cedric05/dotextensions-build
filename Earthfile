@@ -5,8 +5,9 @@ save-all:
         --platform=linux/amd64 \
         +build
 build:
-    ARG PYTHON_TAG=3.11.8
-    FROM ghcr.io/cedric05/python:${PYTHON_TAG}
+    ARG PYTHON_TAG=3.12.4
+    # FROM ghcr.io/cedric05/python:${PYTHON_TAG}
+    FROM python:${PYTHON_TAG}-bullseye
     ARG VERSION=0.0.42a11
     ARG TARGETPLATFORM
     LABEL maintainer="kesavarapu.siva@gmail.com"
