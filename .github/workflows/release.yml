@@ -144,7 +144,48 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
+          asset_name: dotextensions-${{ env.dotextensions_version }}-darwin-arm.zip
+          file: cli.zip
+          tag: v-${{ env.dotextensions_version }}
+          overwrite: true
+  push-mac-intel:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version:  ${{ env.python_version }}
+          architecture: "x64"
+      - name: install dothttp
+        run: |
+          pip install pyinstaller==6.1.0 
+          pip install dothttp_req==${{ env.dothttpversion }}
+          wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
+          wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.'  \
+              && cd dist/ && zip -r ../cli.zip cli/  \
+              && cd .. && rm -rf dist build
+          cp cli.zip dothttp-cli.zip
+      # - name: Use Node.js 14.x
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 14.x
+      # - run: |
+      #     ls 
+      #     unzip dothttp-cli.zip
+      #     export CLI_PATH=$(pwd)/cli/cli
+      #     cd test
+      #     npm install
+      #     npm install typescript@latest
+      #     npx tsc
+      #     npx mocha out/test/*.js 
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           asset_name: dotextensions-${{ env.dotextensions_version }}-darwin.zip
           file: cli.zip
           tag: v-${{ env.dotextensions_version }}
           overwrite: true
+    
+    
