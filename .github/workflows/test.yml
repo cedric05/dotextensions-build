@@ -1,0 +1,230 @@
+name: Windows arm test
+on:
+  # push:
+    # branches:
+    #   - *
+    # tags:
+    #   - v*
+  workflow_dispatch: 
+    inputs:
+      dothttpversion:
+        required: true
+        description: "dothttp python package version (don't include prefix `v`)"
+      dotextensions_version:
+        required: false
+        description: "binary version of python package, if not provided, we will assume dothttpversion"
+      python_version:
+        required: false
+        default: "3.12.4"
+        description: "python version to cook"
+      linux_python_version:
+        required: false
+        default: "3.12.4"
+        description: "linux version python to cook"
+
+env:
+  dothttpversion: ${{ github.event.inputs.dothttpversion }}
+  dotextensions_version: ${{ github.event.inputs.dothttpversion || github.event.inputs.dotextensions_version }}
+  python_version: ${{ github.event.inputs.python_version }}
+  linux_python_version: ${{ github.event.inputs.linux_python_version }}
+jobs:
+  push-windows-arm:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: docker/setup-qemu-action@v3
+        name: Set up QEMU
+        with:
+          platforms: arm64
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.python_version }}
+          architecture: "x64"
+      - name: install dothttp-req and build dothttp
+        shell: powershell
+        run: |
+          pip install dothttp_req==${{ env.dothttpversion }} pyinstaller==6.1.0
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
+          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.'
+          Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
+      # - name: Use Node.js 14.x
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 14.x
+      # - run: |
+      #     dir
+      #     cd test
+      #     npm install
+      #     npx tsc
+      #     npx cross-env CLI_PATH=..\dist\\cli\\cli.exe npx mocha out\test\*.js 
+      # - name: Upload binaries to release
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     asset_name: dotextensions-${{ env.dotextensions_version }}-x86-windows.zip
+      #     file: dotextensions-x86-windows.zip
+      #     tag: v-${{ env.dotextensions_version }}
+      #     overwrite: true
+  # push-windows:
+  #   runs-on: windows-2019
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-python@v2
+  #       with:
+  #         python-version: ${{ env.python_version }}
+  #         architecture: "x64"
+  #     - name: install dothttp-req
+  #       shell: powershell
+  #       run: |
+  #         pip install dothttp_req==${{ env.dothttpversion }} pyinstaller==6.1.0
+  #         Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
+  #         Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
+  #         pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.'
+  #         Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
+  #     - name: Use Node.js 14.x
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 14.x
+  #     - run: |
+  #         dir
+  #         cd test
+  #         npm install
+  #         npx tsc
+  #         npx cross-env CLI_PATH=..\dist\\cli\\cli.exe npx mocha out\test\*.js 
+  #     - name: Upload binaries to release
+  #       uses: svenstaro/upload-release-action@v2
+  #       with:
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         asset_name: dotextensions-${{ env.dotextensions_version }}-x86-windows.zip
+  #         file: dotextensions-x86-windows.zip
+  #         tag: v-${{ env.dotextensions_version }}
+  #         overwrite: true
+  # pushlinux:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Log into registry
+  #       run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+  #     - name: Set up QEMU
+  #       id: qemu
+  #       uses: docker/setup-qemu-action@v1
+  #       with:
+  #           image: tonistiigi/binfmt:latest
+  #           platforms: all
+  #     - name: Download latest earthly
+  #       run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.19/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"  
+  #     - name: Build image
+  #       run: |
+  #         earthly +save-all --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.linux_python_version }}
+  #         mv cli-linux/amd64.zip cli-amd64.zip
+  #         mv cli-linux/arm64.zip cli-arm64.zip
+  #     # - name: Use Node.js 14.x
+  #     #   uses: actions/setup-node@v1
+  #     #   with:
+  #     #     node-version: 14.x
+  #     # - run: |
+  #     #     ls 
+  #     #     unzip cli-amd64.zip
+  #     #     export CLI_PATH=$(realpath cli/cli)
+  #     #     cd test
+  #     #     npm install
+  #     #     npx tsc
+  #     #     npx mocha out/test/*.js 
+  #     - name: Upload arm64 binaries to release
+  #       uses: svenstaro/upload-release-action@v2
+  #       with:
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         asset_name: dotextensions-${{ env.dotextensions_version }}-linux-arm64.zip
+  #         file: cli-arm64.zip
+  #         tag: v-${{ env.dotextensions_version }}
+  #         overwrite: true
+  #     - name: Upload amd64 binaries to release
+  #       uses: svenstaro/upload-release-action@v2
+  #       with:
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         asset_name: dotextensions-${{ env.dotextensions_version }}-linux-amd64.zip
+  #         file: cli-amd64.zip
+  #         tag: v-${{ env.dotextensions_version }}
+  #         overwrite: true
+  # push-mac:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-python@v2
+  #       with:
+  #         python-version:  ${{ env.python_version }}
+  #         architecture: "x64"
+  #     - name: install dothttp
+  #       run: |
+  #         pip install pyinstaller==6.1.0 
+  #         pip install dothttp_req==${{ env.dothttpversion }}
+  #         wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
+  #         wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
+  #         pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.'  \
+  #             && cd dist/ && zip -r ../cli.zip cli/  \
+  #             && cd .. && rm -rf dist build
+  #         cp cli.zip dothttp-cli.zip
+  #     # - name: Use Node.js 14.x
+  #     #   uses: actions/setup-node@v1
+  #     #   with:
+  #     #     node-version: 14.x
+  #     # - run: |
+  #     #     ls 
+  #     #     unzip dothttp-cli.zip
+  #     #     export CLI_PATH=$(pwd)/cli/cli
+  #     #     cd test
+  #     #     npm install
+  #     #     npm install typescript@latest
+  #     #     npx tsc
+  #     #     npx mocha out/test/*.js 
+  #     - name: Upload binaries to release
+  #       uses: svenstaro/upload-release-action@v2
+  #       with:
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         asset_name: dotextensions-${{ env.dotextensions_version }}-darwin-arm.zip
+  #         file: cli.zip
+  #         tag: v-${{ env.dotextensions_version }}
+  #         overwrite: true
+  # push-mac-intel:
+  #   runs-on: macos-13
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-python@v2
+  #       with:
+  #         python-version:  ${{ env.python_version }}
+  #         architecture: "x64"
+  #     - name: install dothttp
+  #       run: |
+  #         pip install pyinstaller==6.1.0 
+  #         pip install dothttp_req==${{ env.dothttpversion }}
+  #         wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
+  #         wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
+  #         pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.'  \
+  #             && cd dist/ && zip -r ../cli.zip cli/  \
+  #             && cd .. && rm -rf dist build
+  #         cp cli.zip dothttp-cli.zip
+  #     # - name: Use Node.js 14.x
+  #     #   uses: actions/setup-node@v1
+  #     #   with:
+  #     #     node-version: 14.x
+  #     # - run: |
+  #     #     ls 
+  #     #     unzip dothttp-cli.zip
+  #     #     export CLI_PATH=$(pwd)/cli/cli
+  #     #     cd test
+  #     #     npm install
+  #     #     npm install typescript@latest
+  #     #     npx tsc
+  #     #     npx mocha out/test/*.js 
+  #     - name: Upload binaries to release
+  #       uses: svenstaro/upload-release-action@v2
+  #       with:
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         asset_name: dotextensions-${{ env.dotextensions_version }}-darwin.zip
+  #         file: cli.zip
+  #         tag: v-${{ env.dotextensions_version }}
+  #         overwrite: true
+    
+    
