@@ -31,8 +31,8 @@ jobs:
   push-windows:
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.python_version }}
           architecture: "x64"
@@ -45,9 +45,9 @@ jobs:
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.'
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
       - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: 14.x
+          node-version: 16.x
       - run: |
           dir
           cd test
@@ -65,7 +65,7 @@ jobs:
   pushlinux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Log into registry
         run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
       - name: Set up QEMU
@@ -82,7 +82,7 @@ jobs:
           mv cli-linux/amd64.zip cli-amd64.zip
           mv cli-linux/arm64.zip cli-arm64.zip
       # - name: Use Node.js 14.x
-      #   uses: actions/setup-node@v1
+      #   uses: actions/setup-node@v4
       #   with:
       #     node-version: 14.x
       # - run: |
@@ -112,8 +112,8 @@ jobs:
   push-mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version:  ${{ env.python_version }}
           architecture: "x64"
@@ -128,7 +128,7 @@ jobs:
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
       # - name: Use Node.js 14.x
-      #   uses: actions/setup-node@v1
+      #   uses: actions/setup-node@v4
       #   with:
       #     node-version: 14.x
       # - run: |
@@ -151,8 +151,8 @@ jobs:
   push-mac-intel:
     runs-on: macos-13
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version:  ${{ env.python_version }}
           architecture: "x64"
@@ -167,7 +167,7 @@ jobs:
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
       # - name: Use Node.js 14.x
-      #   uses: actions/setup-node@v1
+      #   uses: actions/setup-node@v4
       #   with:
       #     node-version: 14.x
       # - run: |
