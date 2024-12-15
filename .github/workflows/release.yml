@@ -27,6 +27,7 @@ env:
   dotextensions_version: ${{ github.event.inputs.dothttpversion || github.event.inputs.dotextensions_version }}
   python_version: ${{ github.event.inputs.python_version }}
   linux_python_version: ${{ github.event.inputs.linux_python_version }}
+  pyinstaller_version: 6.1.0
 jobs:
   push-windows:
     runs-on: windows-2019
@@ -39,10 +40,13 @@ jobs:
       - name: install dothttp-req
         shell: powershell
         run: |
-          pip install dothttp_req==${{ env.dothttpversion }} pyinstaller==6.1.0
+          pip install pyinstaller==${{ env.pyinstaller_version }}
+          pip install pip-licenses
+          pip install dothttp_req==${{ env.dothttpversion }} 
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
-          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.'
+          pip-licenses --format=json --output-file=licenses.json -l
+          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.' 'licenses.json:.'
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
       - name: Use Node.js 14.x
         uses: actions/setup-node@v4
@@ -119,11 +123,13 @@ jobs:
           architecture: "x64"
       - name: install dothttp
         run: |
-          pip install pyinstaller==6.1.0 
+          pip install pyinstaller==${{ env.pyinstaller_version }}
+          pip install pip-licenses
           pip install dothttp_req==${{ env.dothttpversion }}
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
-          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.'  \
+          pip-licenses --format=json --output-file=licenses.json -l
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' 'licenses.json:.'  \
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
@@ -158,11 +164,13 @@ jobs:
           architecture: "x64"
       - name: install dothttp
         run: |
-          pip install pyinstaller==6.1.0 
+          pip install pyinstaller==${{ env.pyinstaller_version }}
+          pip install pip-licenses
           pip install dothttp_req==${{ env.dothttpversion }}
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
-          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.'  \
+          pip-licenses --format=json --output-file=licenses.json -l
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' 'licenses.json:.'  \
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
