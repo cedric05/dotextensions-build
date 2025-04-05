@@ -18,7 +18,7 @@ build:
     RUN wget https://raw.githubusercontent.com/cedric05/dothttp/v${VERSION}/dothttp/http.tx
     RUN wget https://raw.githubusercontent.com/cedric05/dothttp/v${VERSION}/dothttp/postScript.js
     RUN pip-licenses --format=json --output-file=licenses.json -l
-    RUN pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'licenses.json:.' --add-data 'postScript.js:.'  \
+    RUN pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'licenses.json:.' --add-data 'postScript.js:.'  --additional-hooks-dir=custom_hooks  \
         && cd dist/ && zip -r ../cli.zip cli/  \
         && cd .. && rm -rf dist build
     SAVE ARTIFACT cli.zip AS LOCAL ./cli-$TARGETPLATFORM.zip

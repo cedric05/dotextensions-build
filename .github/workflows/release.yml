@@ -46,7 +46,7 @@ jobs:
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
           pip-licenses --format=json --output-file=licenses.json -l
-          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.' --add-data 'licenses.json:.'
+          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
       - name: Use Node.js 14.x
         uses: actions/setup-node@v4
@@ -129,7 +129,7 @@ jobs:
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
           pip-licenses --format=json --output-file=licenses.json -l
-          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.'  \
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.'  --additional-hooks-dir=custom_hooks  \
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
@@ -170,7 +170,7 @@ jobs:
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
           pip-licenses --format=json --output-file=licenses.json -l
-          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.'  \
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.'  --additional-hooks-dir=custom_hooks  \
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
