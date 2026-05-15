@@ -48,10 +48,10 @@ jobs:
           pip-licenses --format=json --output-file=licenses.json -l
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
-      - name: Use Node.js 14.x
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.x
       # - run: |
       #     dir
       #     cd test
