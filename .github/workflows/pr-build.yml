@@ -89,6 +89,9 @@ jobs:
         with:
           python-version: ${{ env.python_version }}
           architecture: "x64"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
       - name: Build
         run: |
           pip install pyinstaller==${{ env.pyinstaller_version }}
@@ -114,6 +117,9 @@ jobs:
         with:
           python-version: ${{ env.python_version }}
           architecture: "x64"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
       - name: Build
         run: |
           pip install pyinstaller==${{ env.pyinstaller_version }}
