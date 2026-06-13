@@ -78,6 +78,50 @@ jobs:
           file: dotextensions-x86-windows.zip
           tag: v-${{ env.dotextensions_version }}
           overwrite: true
+  push-windows-arm:
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python_version }}
+          architecture: "arm64"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: install dothttp-req
+        shell: powershell
+        run: |
+          pip install pyinstaller==${{ env.pyinstaller_version }}
+          pip install pip-licenses
+          pip install dothttp_req==${{ env.dothttpversion }}
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
+          pip-licenses --format=json --output-file=licenses.json -l
+          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks
+          $pyVersion = python --version 2>&1 | Select-String -Pattern '\d+\.\d+\.\d+' | ForEach-Object { $_.Matches[0].Value }
+          [ordered]@{
+            version      = $env:dotextensions_version
+            dothttp_req  = $env:dothttpversion
+            python       = $pyVersion
+            pyinstaller  = $env:pyinstaller_version
+            platform     = "arm64-windows"
+            runner_os    = $env:RUNNER_OS
+            runner_arch  = $env:RUNNER_ARCH
+            build_id     = $env:build_id
+            build_number = $env:build_number
+            commit       = $env:commit
+            source       = $env:source
+          } | ConvertTo-Json | Set-Content -Path dist\cli\version.json
+          Compress-Archive -DestinationPath dotextensions-arm64-windows.zip -Path dist\cli
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          asset_name: dotextensions-${{ env.dotextensions_version }}-arm64-windows.zip
+          file: dotextensions-arm64-windows.zip
+          tag: v-${{ env.dotextensions_version }}
+          overwrite: true
   pushlinux:
     runs-on: ubuntu-latest
     steps:

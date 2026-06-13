@@ -68,6 +68,48 @@ jobs:
           path: dotextensions-x86-windows.zip
           retention-days: 7
 
+  build-windows-arm:
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python_version }}
+          architecture: "arm64"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: Build
+        shell: powershell
+        run: |
+          pip install pyinstaller==${{ env.pyinstaller_version }}
+          pip install pip-licenses
+          pip install dothttp_req==${{ env.dothttpversion }}
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
+          pip-licenses --format=json --output-file=licenses.json -l
+          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks
+          $pyVersion = python --version 2>&1 | Select-String -Pattern '\d+\.\d+\.\d+' | ForEach-Object { $_.Matches[0].Value }
+          [ordered]@{
+            version      = $env:dothttpversion
+            dothttp_req  = $env:dothttpversion
+            python       = $pyVersion
+            pyinstaller  = $env:pyinstaller_version
+            platform     = "arm64-windows"
+            runner_os    = $env:RUNNER_OS
+            runner_arch  = $env:RUNNER_ARCH
+            build_id     = $env:build_id
+            build_number = $env:build_number
+            commit       = $env:commit
+            source       = $env:source
+          } | ConvertTo-Json | Set-Content -Path dist\cli\version.json
+          Compress-Archive -DestinationPath dotextensions-arm64-windows.zip -Path dist\cli
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotextensions-arm64-windows
+          path: dotextensions-arm64-windows.zip
+          retention-days: 7
+
   build-linux:
     runs-on: ubuntu-latest
     steps:
