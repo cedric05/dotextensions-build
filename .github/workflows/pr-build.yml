@@ -10,18 +10,43 @@ on:
         description: "dothttp python package version (don't include prefix `v`)"
       python_version:
         required: false
-        default: "3.12.4"
+        default: "3.12.10"
         description: "python version to cook"
-      linux_python_version:
+      build_windows:
         required: false
-        default: "3.12.4"
-        description: "linux version python to cook"
+        default: "true"
+        description: "build windows x86"
+        type: boolean
+      build_windows_arm:
+        required: false
+        default: "true"
+        description: "build windows arm64"
+        type: boolean
+      build_linux:
+        required: false
+        default: "true"
+        description: "build linux (amd64 + arm64 via QEMU)"
+        type: boolean
+      build_linux_experimental:
+        required: false
+        default: "false"
+        description: "build linux amd64 + arm64 via native runners (experimental)"
+        type: boolean
+      build_mac:
+        required: false
+        default: "true"
+        description: "build macOS arm (macos-latest)"
+        type: boolean
+      build_mac_intel:
+        required: false
+        default: "true"
+        description: "build macOS intel (macos-15-intel)"
+        type: boolean
 
 env:
   # For PRs, fall back to the latest stable release so the build always has a version to work with.
   dothttpversion: ${{ github.event.inputs.dothttpversion || '0.0.44' }}
-  python_version: ${{ github.event.inputs.python_version || '3.12.4' }}
-  linux_python_version: ${{ github.event.inputs.linux_python_version || '3.12.4' }}
+  python_version: ${{ github.event.inputs.python_version || '3.12.10' }}
   pyinstaller_version: 6.1.0
   build_id: ${{ github.run_id }}
   build_number: ${{ github.run_number }}
@@ -30,6 +55,7 @@ env:
 
 jobs:
   build-windows:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_windows == 'true' }}
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v6
@@ -53,7 +79,7 @@ jobs:
             dothttp_req  = $env:dothttpversion
             python       = $pyVersion
             pyinstaller  = $env:pyinstaller_version
-            platform     = "x86-windows"
+            platform     = "windows-x86"
             runner_os    = $env:RUNNER_OS
             runner_arch  = $env:RUNNER_ARCH
             build_id     = $env:build_id
@@ -61,16 +87,16 @@ jobs:
             commit       = $env:commit
             source       = $env:source
           } | ConvertTo-Json | Set-Content -Path dist\cli\version.json
-          Compress-Archive -DestinationPath dotextensions-x86-windows.zip -Path dist\cli
+          Compress-Archive -DestinationPath dotextensions-windows-x86.zip -Path dist\cli
       - uses: actions/upload-artifact@v7
         with:
-          name: dotextensions-x86-windows
-          path: dotextensions-x86-windows.zip
+          name: dotextensions-windows-x86
+          path: dotextensions-windows-x86.zip
           retention-days: 7
 
   build-windows-arm:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_windows_arm == 'true' }}
     runs-on: windows-11-arm
-    if: false
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -96,7 +122,7 @@ jobs:
             dothttp_req  = $env:dothttpversion
             python       = $pyVersion
             pyinstaller  = $env:pyinstaller_version
-            platform     = "arm64-windows"
+            platform     = "windows-arm64"
             runner_os    = $env:RUNNER_OS
             runner_arch  = $env:RUNNER_ARCH
             build_id     = $env:build_id
@@ -104,14 +130,15 @@ jobs:
             commit       = $env:commit
             source       = $env:source
           } | ConvertTo-Json | Set-Content -Path dist\cli\version.json
-          Compress-Archive -DestinationPath dotextensions-arm64-windows.zip -Path dist\cli
+          Compress-Archive -DestinationPath dotextensions-windows-arm64.zip -Path dist\cli
       - uses: actions/upload-artifact@v7
         with:
-          name: dotextensions-arm64-windows
-          path: dotextensions-arm64-windows.zip
+          name: dotextensions-windows-arm64
+          path: dotextensions-windows-arm64.zip
           retention-days: 7
 
   build-linux:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_linux == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -126,7 +153,7 @@ jobs:
         run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.19/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
       - name: Build
         run: |
-          earthly +save-all --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.linux_python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
+          earthly +save-all --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
           mv cli-linux/amd64.zip cli-amd64.zip
           mv cli-linux/arm64.zip cli-arm64.zip
       - uses: actions/upload-artifact@v7
@@ -140,7 +167,42 @@ jobs:
           path: cli-arm64.zip
           retention-days: 7
 
+  build-linux-amd64-experimental:
+    if: ${{ github.event.inputs.build_linux_experimental == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download earthly
+        run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.19/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'
+      - name: Build
+        run: |
+          earthly +build --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
+          mv cli-linux/amd64.zip dotextensions-linux-amd64-experimental.zip
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dotextensions-linux-amd64-experimental
+          path: dotextensions-linux-amd64-experimental.zip
+          retention-days: 7
+
+  build-linux-arm64-experimental:
+    if: ${{ github.event.inputs.build_linux_experimental == 'true' }}
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download earthly
+        run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.19/earthly-linux-arm64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'
+      - name: Build
+        run: |
+          earthly +build --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
+          mv cli-linux/arm64.zip dotextensions-linux-arm64-experimental.zip
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dotextensions-linux-arm64-experimental
+          path: dotextensions-linux-arm64-experimental.zip
+          retention-days: 7
+
   build-mac:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_mac == 'true' }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
@@ -160,15 +222,17 @@ jobs:
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
           pip-licenses --format=json --output-file=licenses.json -l
           pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks \
-              && python3 -c "import json; print(json.dumps({'version': '$dothttpversion', 'dothttp_req': '$dothttpversion', 'python': '$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')', 'pyinstaller': '$pyinstaller_version', 'platform': 'darwin-arm', 'runner_os': '$RUNNER_OS', 'runner_arch': '$RUNNER_ARCH', 'build_id': '$build_id', 'build_number': '$build_number', 'commit': '$commit', 'source': '$source'}, indent=2))" > dist/cli/version.json \
+              && python3 -c "import json; print(json.dumps({'version': '$dothttpversion', 'dothttp_req': '$dothttpversion', 'python': '$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')', 'pyinstaller': '$pyinstaller_version', 'platform': 'darwin-arm64', 'runner_os': '$RUNNER_OS', 'runner_arch': '$RUNNER_ARCH', 'build_id': '$build_id', 'build_number': '$build_number', 'commit': '$commit', 'source': '$source'}, indent=2))" > dist/cli/version.json \
               && cd dist/ && zip -r ../cli.zip cli/ \
               && cd .. && rm -rf dist build
       - uses: actions/upload-artifact@v7
         with:
-          name: dotextensions-darwin-arm
+          name: dotextensions-darwin-arm64
           path: cli.zip
           retention-days: 7
+
   build-mac-intel:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_mac_intel == 'true' }}
     runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v6
@@ -188,11 +252,11 @@ jobs:
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
           pip-licenses --format=json --output-file=licenses.json -l
           pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks \
-              && python3 -c "import json; print(json.dumps({'version': '$dothttpversion', 'dothttp_req': '$dothttpversion', 'python': '$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')', 'pyinstaller': '$pyinstaller_version', 'platform': 'darwin', 'runner_os': '$RUNNER_OS', 'runner_arch': '$RUNNER_ARCH', 'build_id': '$build_id', 'build_number': '$build_number', 'commit': '$commit', 'source': '$source'}, indent=2))" > dist/cli/version.json \
+              && python3 -c "import json; print(json.dumps({'version': '$dothttpversion', 'dothttp_req': '$dothttpversion', 'python': '$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')', 'pyinstaller': '$pyinstaller_version', 'platform': 'darwin-amd64', 'runner_os': '$RUNNER_OS', 'runner_arch': '$RUNNER_ARCH', 'build_id': '$build_id', 'build_number': '$build_number', 'commit': '$commit', 'source': '$source'}, indent=2))" > dist/cli/version.json \
               && cd dist/ && zip -r ../cli.zip cli/ \
               && cd .. && rm -rf dist build
       - uses: actions/upload-artifact@v7
         with:
-          name: dotextensions-darwin
+          name: dotextensions-darwin-amd64
           path: cli.zip
           retention-days: 7
