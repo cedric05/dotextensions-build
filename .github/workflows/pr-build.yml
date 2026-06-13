@@ -1,0 +1,108 @@
+name: PR Build Validation
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      dothttpversion:
+        required: true
+        description: "dothttp python package version (don't include prefix `v`)"
+      python_version:
+        required: false
+        default: "3.12.4"
+        description: "python version to cook"
+      linux_python_version:
+        required: false
+        default: "3.12.4"
+        description: "linux version python to cook"
+
+env:
+  # For PRs, fall back to the latest stable release so the build always has a version to work with.
+  dothttpversion: ${{ github.event.inputs.dothttpversion || '0.0.44' }}
+  python_version: ${{ github.event.inputs.python_version || '3.12.4' }}
+  linux_python_version: ${{ github.event.inputs.linux_python_version || '3.12.4' }}
+  pyinstaller_version: 6.1.0
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python_version }}
+          architecture: "x64"
+      - name: Build
+        shell: powershell
+        run: |
+          pip install pyinstaller==${{ env.pyinstaller_version }}
+          pip install pip-licenses
+          pip install dothttp_req==${{ env.dothttpversion }}
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx -OutFile http.tx
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js -OutFile postScript.js
+          pip-licenses --format=json --output-file=licenses.json -l
+          pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks
+          $pyVersion = python --version 2>&1 | Select-String -Pattern '\d+\.\d+\.\d+' | ForEach-Object { $_.Matches[0].Value }
+          Set-Content -Path dist\cli\version.json -Value ('{"version": "' + $env:dothttpversion + '", "dothttp_req": "' + $env:dothttpversion + '", "python": "' + $pyVersion + '", "pyinstaller": "' + $env:pyinstaller_version + '"}')
+          Compress-Archive -DestinationPath dotextensions-x86-windows.zip -Path dist\cli
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotextensions-x86-windows
+          path: dotextensions-x86-windows.zip
+          retention-days: 7
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log into registry
+        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      - name: Download latest earthly
+        run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.19/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
+      - name: Build
+        run: |
+          earthly +save-all --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.linux_python_version }}
+          mv cli-linux/amd64.zip cli-amd64.zip
+          mv cli-linux/arm64.zip cli-arm64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotextensions-linux-amd64
+          path: cli-amd64.zip
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotextensions-linux-arm64
+          path: cli-arm64.zip
+          retention-days: 7
+
+  build-mac-intel:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python_version }}
+          architecture: "x64"
+      - name: Build
+        run: |
+          pip install pyinstaller==${{ env.pyinstaller_version }}
+          pip install pip-licenses
+          pip install dothttp_req==${{ env.dothttpversion }}
+          wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/http.tx
+          wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
+          pip-licenses --format=json --output-file=licenses.json -l
+          pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks \
+              && echo '{"version": "'"$dothttpversion"'", "dothttp_req": "'"$dothttpversion"'", "python": "'"$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"'", "pyinstaller": "'"$pyinstaller_version"'"}' > dist/cli/version.json \
+              && cd dist/ && zip -r ../cli.zip cli/ \
+              && cd .. && rm -rf dist build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotextensions-darwin
+          path: cli.zip
+          retention-days: 7
