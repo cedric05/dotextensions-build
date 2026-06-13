@@ -32,8 +32,8 @@ jobs:
   build-windows:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.python_version }}
           architecture: "x64"
@@ -62,7 +62,7 @@ jobs:
             source       = $env:source
           } | ConvertTo-Json | Set-Content -Path dist\cli\version.json
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip -Path dist\cli
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dotextensions-x86-windows
           path: dotextensions-x86-windows.zip
@@ -71,12 +71,12 @@ jobs:
   build-windows-arm:
     runs-on: windows-11-arm
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.python_version }}
           architecture: "arm64"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22.x
       - name: Build
@@ -104,7 +104,7 @@ jobs:
             source       = $env:source
           } | ConvertTo-Json | Set-Content -Path dist\cli\version.json
           Compress-Archive -DestinationPath dotextensions-arm64-windows.zip -Path dist\cli
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dotextensions-arm64-windows
           path: dotextensions-arm64-windows.zip
@@ -113,7 +113,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Log into registry
         run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
       - name: Set up QEMU
@@ -128,12 +128,12 @@ jobs:
           earthly +save-all --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.linux_python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
           mv cli-linux/amd64.zip cli-amd64.zip
           mv cli-linux/arm64.zip cli-arm64.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dotextensions-linux-amd64
           path: cli-amd64.zip
           retention-days: 7
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dotextensions-linux-arm64
           path: cli-arm64.zip
@@ -142,12 +142,12 @@ jobs:
   build-mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.python_version }}
           architecture: "x64"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22.x
       - name: Build
@@ -162,7 +162,7 @@ jobs:
               && python3 -c "import json; print(json.dumps({'version': '$dothttpversion', 'dothttp_req': '$dothttpversion', 'python': '$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')', 'pyinstaller': '$pyinstaller_version', 'platform': 'darwin-arm', 'runner_os': '$RUNNER_OS', 'runner_arch': '$RUNNER_ARCH', 'build_id': '$build_id', 'build_number': '$build_number', 'commit': '$commit', 'source': '$source'}, indent=2))" > dist/cli/version.json \
               && cd dist/ && zip -r ../cli.zip cli/ \
               && cd .. && rm -rf dist build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dotextensions-darwin-arm
           path: cli.zip
@@ -170,12 +170,12 @@ jobs:
   build-mac-intel:
     runs-on: macos-15-intel
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.python_version }}
           architecture: "x64"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22.x
       - name: Build
@@ -190,7 +190,7 @@ jobs:
               && python3 -c "import json; print(json.dumps({'version': '$dothttpversion', 'dothttp_req': '$dothttpversion', 'python': '$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')', 'pyinstaller': '$pyinstaller_version', 'platform': 'darwin', 'runner_os': '$RUNNER_OS', 'runner_arch': '$RUNNER_ARCH', 'build_id': '$build_id', 'build_number': '$build_number', 'commit': '$commit', 'source': '$source'}, indent=2))" > dist/cli/version.json \
               && cd dist/ && zip -r ../cli.zip cli/ \
               && cd .. && rm -rf dist build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dotextensions-darwin
           path: cli.zip
