@@ -22,15 +22,15 @@ on:
         default: "true"
         description: "build windows arm64"
         type: boolean
-      build_linux:
+      build_linux_amd64:
         required: false
         default: "true"
-        description: "build linux (amd64 + arm64 via QEMU)"
+        description: "build linux amd64 via native runner"
         type: boolean
-      build_linux_experimental:
+      build_linux_arm64:
         required: false
-        default: "false"
-        description: "build linux amd64 + arm64 via native runners (experimental)"
+        default: "true"
+        description: "build linux arm64 via native runner"
         type: boolean
       build_mac:
         required: false
@@ -137,38 +137,8 @@ jobs:
           path: dotextensions-windows-arm64.zip
           retention-days: 7
 
-  build-linux:
-    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_linux == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Log into registry
-        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          image: tonistiigi/binfmt:latest
-          platforms: all
-      - name: Download latest earthly
-        run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.19/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
-      - name: Build
-        run: |
-          earthly +save-all --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
-          mv cli-linux/amd64.zip cli-amd64.zip
-          mv cli-linux/arm64.zip cli-arm64.zip
-      - uses: actions/upload-artifact@v7
-        with:
-          name: dotextensions-linux-amd64
-          path: cli-amd64.zip
-          retention-days: 7
-      - uses: actions/upload-artifact@v7
-        with:
-          name: dotextensions-linux-arm64
-          path: cli-arm64.zip
-          retention-days: 7
-
-  build-linux-amd64-experimental:
-    if: ${{ github.event.inputs.build_linux_experimental == 'true' }}
+  build-linux-amd64:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_linux_amd64 == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -177,15 +147,15 @@ jobs:
       - name: Build
         run: |
           earthly +build --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
-          mv cli-linux/amd64.zip dotextensions-linux-amd64-experimental.zip
+          mv cli-linux/amd64.zip dotextensions-linux-amd64.zip
       - uses: actions/upload-artifact@v7
         with:
-          name: dotextensions-linux-amd64-experimental
-          path: dotextensions-linux-amd64-experimental.zip
+          name: dotextensions-linux-amd64
+          path: dotextensions-linux-amd64.zip
           retention-days: 7
 
-  build-linux-arm64-experimental:
-    if: ${{ github.event.inputs.build_linux_experimental == 'true' }}
+  build-linux-arm64:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_linux_arm64 == 'true' }}
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
@@ -194,11 +164,11 @@ jobs:
       - name: Build
         run: |
           earthly +build --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
-          mv cli-linux/arm64.zip dotextensions-linux-arm64-experimental.zip
+          mv cli-linux/arm64.zip dotextensions-linux-arm64.zip
       - uses: actions/upload-artifact@v7
         with:
-          name: dotextensions-linux-arm64-experimental
-          path: dotextensions-linux-arm64-experimental.zip
+          name: dotextensions-linux-arm64
+          path: dotextensions-linux-arm64.zip
           retention-days: 7
 
   build-mac:
