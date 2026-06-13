@@ -28,6 +28,10 @@ env:
   python_version: ${{ github.event.inputs.python_version }}
   linux_python_version: ${{ github.event.inputs.linux_python_version }}
   pyinstaller_version: 6.1.0
+  build_id: ${{ github.run_id }}
+  build_number: ${{ github.run_number }}
+  commit: ${{ github.sha }}
+  source: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 jobs:
   push-windows:
     runs-on: windows-2022
@@ -48,7 +52,7 @@ jobs:
           pip-licenses --format=json --output-file=licenses.json -l
           pyinstaller --distpath dist .\cli.py --add-data 'http.tx;.' --add-data 'postScript.js;.' --add-data 'licenses.json:.' --additional-hooks-dir=custom_hooks
           $pyVersion = python --version 2>&1 | Select-String -Pattern '\d+\.\d+\.\d+' | ForEach-Object { $_.Matches[0].Value }
-          Set-Content -Path dist\cli\version.json -Value ('{"version": "' + $env:dotextensions_version + '", "dothttp_req": "' + $env:dothttpversion + '", "python": "' + $pyVersion + '", "pyinstaller": "' + $env:pyinstaller_version + '", "platform": "x86-windows", "runner_os": "' + $env:RUNNER_OS + '", "runner_arch": "' + $env:RUNNER_ARCH + '"}')
+          Set-Content -Path dist\cli\version.json -Value ('{"version": "' + $env:dotextensions_version + '", "dothttp_req": "' + $env:dothttpversion + '", "python": "' + $pyVersion + '", "pyinstaller": "' + $env:pyinstaller_version + '", "platform": "x86-windows", "runner_os": "' + $env:RUNNER_OS + '", "runner_arch": "' + $env:RUNNER_ARCH + '", "build_id": "' + $env:build_id + '", "build_number": "' + $env:build_number + '", "commit": "' + $env:commit + '", "source": "' + $env:source + '"}')
           Compress-Archive -DestinationPath dotextensions-x86-windows.zip  -Path  dist\cli
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
@@ -78,7 +82,7 @@ jobs:
         run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.19/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
       - name: Build image
         run: |
-          earthly +save-all --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.linux_python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH
+          earthly +save-all --VERSION=${{ env.dothttpversion }} --PYTHON_TAG=${{ env.linux_python_version }} --RUNNER_OS=$RUNNER_OS --RUNNER_ARCH=$RUNNER_ARCH --BUILD_ID=$build_id --BUILD_NUMBER=$build_number --COMMIT=$commit --SOURCE=$source
           mv cli-linux/amd64.zip cli-amd64.zip
           mv cli-linux/arm64.zip cli-arm64.zip
       - name: Upload arm64 binaries to release
@@ -117,7 +121,7 @@ jobs:
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
           pip-licenses --format=json --output-file=licenses.json -l
           pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.'  --additional-hooks-dir=custom_hooks  \
-              && echo '{"version": "'"$dotextensions_version"'", "dothttp_req": "'"$dothttpversion"'", "python": "'"$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"'", "pyinstaller": "'"$pyinstaller_version"'", "platform": "darwin-arm", "runner_os": "'"$RUNNER_OS"'", "runner_arch": "'"$RUNNER_ARCH"'"}' > dist/cli/version.json \
+              && echo '{"version": "'"$dotextensions_version"'", "dothttp_req": "'"$dothttpversion"'", "python": "'"$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"'", "pyinstaller": "'"$pyinstaller_version"'", "platform": "darwin-arm", "runner_os": "'"$RUNNER_OS"'", "runner_arch": "'"$RUNNER_ARCH"'", "build_id": "'"$build_id"'", "build_number": "'"$build_number"'", "commit": "'"$commit"'", "source": "'"$source"'"}' > dist/cli/version.json \
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip
@@ -149,7 +153,7 @@ jobs:
           wget https://raw.githubusercontent.com/cedric05/dothttp/v${{ env.dothttpversion }}/dothttp/postScript.js
           pip-licenses --format=json --output-file=licenses.json -l
           pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'postScript.js:.' --add-data 'licenses.json:.'  --additional-hooks-dir=custom_hooks  \
-              && echo '{"version": "'"$dotextensions_version"'", "dothttp_req": "'"$dothttpversion"'", "python": "'"$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"'", "pyinstaller": "'"$pyinstaller_version"'", "platform": "darwin", "runner_os": "'"$RUNNER_OS"'", "runner_arch": "'"$RUNNER_ARCH"'"}' > dist/cli/version.json \
+              && echo '{"version": "'"$dotextensions_version"'", "dothttp_req": "'"$dothttpversion"'", "python": "'"$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"'", "pyinstaller": "'"$pyinstaller_version"'", "platform": "darwin", "runner_os": "'"$RUNNER_OS"'", "runner_arch": "'"$RUNNER_ARCH"'", "build_id": "'"$build_id"'", "build_number": "'"$build_number"'", "commit": "'"$commit"'", "source": "'"$source"'"}' > dist/cli/version.json \
               && cd dist/ && zip -r ../cli.zip cli/  \
               && cd .. && rm -rf dist build
           cp cli.zip dothttp-cli.zip

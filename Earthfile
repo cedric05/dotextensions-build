@@ -12,6 +12,10 @@ build:
     ARG TARGETPLATFORM
     ARG RUNNER_OS=Linux
     ARG RUNNER_ARCH=X64
+    ARG BUILD_ID=
+    ARG BUILD_NUMBER=
+    ARG COMMIT=
+    ARG SOURCE=
     LABEL maintainer="kesavarapu.siva@gmail.com"
     RUN apt update && apt install zip
     RUN pip install pyinstaller==6.1.0 dothttp-req==${VERSION} pip-licenses  
@@ -21,7 +25,7 @@ build:
     RUN wget https://raw.githubusercontent.com/cedric05/dothttp/v${VERSION}/dothttp/postScript.js
     RUN pip-licenses --format=json --output-file=licenses.json -l
     RUN pyinstaller --distpath dist ./cli.py --add-data 'http.tx:.' --add-data 'licenses.json:.' --add-data 'postScript.js:.'  --additional-hooks-dir=custom_hooks  \
-        && echo '{"version": "'"${VERSION}"'", "dothttp_req": "'"${VERSION}"'", "python": "'"${PYTHON_TAG}"'", "pyinstaller": "6.1.0", "platform": "'"${TARGETPLATFORM}"'", "runner_os": "'"${RUNNER_OS}"'", "runner_arch": "'"${RUNNER_ARCH}"'"}' > dist/cli/version.json \
+        && echo '{"version": "'"${VERSION}"'", "dothttp_req": "'"${VERSION}"'", "python": "'"${PYTHON_TAG}"'", "pyinstaller": "6.1.0", "platform": "'"${TARGETPLATFORM}"'", "runner_os": "'"${RUNNER_OS}"'", "runner_arch": "'"${RUNNER_ARCH}"'", "build_id": "'"${BUILD_ID}"'", "build_number": "'"${BUILD_NUMBER}"'", "commit": "'"${COMMIT}"'", "source": "'"${SOURCE}"'"}' > dist/cli/version.json \
         && cd dist/ && zip -r ../cli.zip cli/  \
         && cd .. && rm -rf dist build
     SAVE ARTIFACT cli.zip AS LOCAL ./cli-$TARGETPLATFORM.zip
